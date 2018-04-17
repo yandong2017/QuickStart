@@ -23,15 +23,19 @@ namespace AspNetMvc.QuickStart.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Login(string UserName, string Password)
         {
+            ViewBag.NameError = false;
+            ViewBag.PasswordError = false;
             Student student = db.GetItemByName(UserName);
             if (student == null)
             {
-                return HttpNotFound();
+                ViewBag.NameError = true;
+                return View();
+            }            
+            if (student.Password.Equals(Password))
+            {                
+                return RedirectToAction("Details", new { Name = student.Name });
             }
-            if(student.Password.Equals(Password))
-            {
-                return RedirectToAction("Details",new { Name = student.Name });
-            }
+            ViewBag.PasswordError = true;
             return View();
         }
 

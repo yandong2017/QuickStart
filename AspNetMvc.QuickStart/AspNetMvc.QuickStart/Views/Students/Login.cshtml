@@ -9,8 +9,16 @@
 {
     @Html.AntiForgeryToken()
     <input type="text" name="Username">
+    if (ViewBag.NameError!=null &&ViewBag.NameError)
+    {
+        @:用户名错误!
+    }
     <hr />
     <input type="password" name="Password">
+    if (ViewBag.PasswordError != null && ViewBag.PasswordError)
+    {
+        @:密码错误!
+    }
     <hr />
     <input type="submit" name="登录">
     @Html.ActionLink("注册", "Create")
