@@ -16,54 +16,52 @@ namespace AspNetMvc.QuickStart.Models
     {
         public string hashId = "Students";
         private ConnectionMultiplexer RedisConnection;
-        public Dictionary<int,Student> DictStudents = new Dictionary<int, Student>();
+        public Dictionary<string, Student> DictStudents = new Dictionary<string, Student>();
         public IDatabase Students { get; set; }
         public StudentDbContext()
         {
             RedisConnection = ConnectionMultiplexer.Connect($"127.0.0.1:6379,password=1q2w3e");
             Students = RedisConnection.GetDatabase(9);
-            DictStudents = new Dictionary<int, Student>();
+            DictStudents = new Dictionary<string, Student>();
             var allkey = Students.HashGetAll(hashId);
             foreach (var item in allkey)
             {
                 Student student = DeserializeSingleData<Student>(item.Value);
                 if (student != null)
                 {
-                    DictStudents[student.ID] = student;
+                    DictStudents[student.Name] = student;
                 }
             }
         }
 
-        public Student GetItemByID(int? id)
+        public Student GetItemByName(string Name)
         {
-            if (DictStudents.ContainsKey(id.Value))
+            if (DictStudents.ContainsKey(Name))
             {
-               return DictStudents[id.Value];
+               return DictStudents[Name];
             }
             return null;
         }
         public void Save(Student student)
         {
-            DictStudents[student.ID] = student;
-            Students.HashSet($"{hashId}", $"{student.ID}", SerializerSingleData<Student>(student));
+            DictStudents[student.Name] = student;
+            Students.HashSet($"{hashId}", $"{student.Name}", SerializerSingleData<Student>(student));
         }
 
         internal void Careate(Student student)
-        {
-            byte[] buffer = Guid.NewGuid().ToByteArray();
-            student.ID = BitConverter.ToInt32(buffer, 0);
-            DictStudents[student.ID] = student;
-            Students.HashSet($"{hashId}", $"{student.ID}", SerializerSingleData<Student>(student));
+        {            
+            DictStudents[student.Name] = student;
+            Students.HashSet($"{hashId}", $"{student.Name}", SerializerSingleData<Student>(student));
         }
 
         public void Remove(Student student)
         {
-            if (!DictStudents.ContainsKey(student.ID))
+            if (!DictStudents.ContainsKey(student.Name))
             {
                 return;
             }
-            DictStudents.Remove(student.ID);
-            Students.HashDelete($"{hashId}", $"{student.ID}");
+            DictStudents.Remove(student.Name);
+            Students.HashDelete($"{hashId}", $"{student.Name}");
             throw new NotImplementedException();
         }
         public static string SerializerSingleData<T>(T t)

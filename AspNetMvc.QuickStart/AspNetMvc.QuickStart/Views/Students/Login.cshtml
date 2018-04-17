@@ -1,0 +1,17 @@
+﻿
+@{
+    ViewBag.Title = "Login";
+}
+
+<h2>Login</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <input type="text" name="Username">
+    <hr />
+    <input type="password" name="Password">
+    <hr />
+    <input type="submit" name="登录">
+    @Html.ActionLink("注册", "Create")
+}

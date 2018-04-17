@@ -13,7 +13,28 @@ namespace AspNetMvc.QuickStart.Controllers
     public class StudentsController : Controller
     {
         private StudentDbContext db = new StudentDbContext();
-        
+
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(string UserName, string Password)
+        {
+            Student student = db.GetItemByName(UserName);
+            if (student == null)
+            {
+                return HttpNotFound();
+            }
+            if(student.Password.Equals(Password))
+            {
+                return RedirectToAction("Details",new { Name = student.Name });
+            }
+            return View();
+        }
+
         // GET: Students
         public ActionResult Index()
         {           
@@ -21,13 +42,14 @@ namespace AspNetMvc.QuickStart.Controllers
         }
 
         // GET: Students/Details/5
-        public ActionResult Details(int? id)
+        public ActionResult Details(string Name)
         {
-            if (id == null)
+            if (Name == null )
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.GetItemByID(id); 
+
+            Student student = db.GetItemByName(Name); 
             if (student == null)
             {
                 return HttpNotFound();
@@ -46,25 +68,28 @@ namespace AspNetMvc.QuickStart.Controllers
         // 详细信息，请参阅 https://go.microsoft.com/fwlink/?LinkId=317598。
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ID,Name,Gender,Major,EntranceDate")] Student student)
+        public ActionResult Create([Bind(Include = "Name,Password,Gender,Major,EntranceDate")] Student student)
         {
             if (ModelState.IsValid)
             {
-                db.Careate(student);                
-                return RedirectToAction("Index");
+                if (db.GetItemByName(student.Name) == null)
+                {
+                    db.Careate(student);
+                    return RedirectToAction("Index");
+                }
             }
 
             return View(student);
         }
 
         // GET: Students/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(string Name)
         {
-            if (id == null)
+            if (Name == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.GetItemByID(id);
+            Student student = db.GetItemByName(Name);
             if (student == null)
             {
                 return HttpNotFound();
@@ -77,7 +102,7 @@ namespace AspNetMvc.QuickStart.Controllers
         // 详细信息，请参阅 https://go.microsoft.com/fwlink/?LinkId=317598。
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,Name,Gender,Major,EntranceDate")] Student student)
+        public ActionResult Edit([Bind(Include = "Name,Password,Gender,Major,EntranceDate")] Student student)
         {
             if (ModelState.IsValid)
             {
@@ -88,13 +113,13 @@ namespace AspNetMvc.QuickStart.Controllers
         }
 
         // GET: Students/Delete/5
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(string Name)
         {
-            if (id == null)
+            if (Name == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.GetItemByID(id);
+            Student student = db.GetItemByName(Name);
             if (student == null)
             {
                 return HttpNotFound();
@@ -105,9 +130,9 @@ namespace AspNetMvc.QuickStart.Controllers
         // POST: Students/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public ActionResult DeleteConfirmed(string Name)
         {
-            Student student = null;// db.Students.Find(id);
+            Student student = db.GetItemByName(Name);
             db.Remove(student);
             return RedirectToAction("Index");
         }
